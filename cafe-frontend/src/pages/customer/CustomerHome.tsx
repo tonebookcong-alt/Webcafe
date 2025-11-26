@@ -1,53 +1,63 @@
 // src/pages/customer/CustomerHome.tsx
 
 import * as React from "react";
-import { Grid, Typography, Container, Box, TextField, InputAdornment, Paper } from "@mui/material"; // Thêm Paper
+import { Grid, Typography, Container, Box, TextField, InputAdornment, Paper } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import SiteFeedbackSection from "@/components/feedback/SiteFeedbackSection";
 import ProductCard from "@/components/site/ProductCard";
-import { useAuth } from "@/auth/AuthProvider"; // THÊM MỚI: Import useAuth
-import LoyaltyIcon from '@mui/icons-material/Loyalty'; // THÊM MỚI: Import Icon
+import { useAuth } from "@/auth/AuthProvider";
+import LoyaltyIcon from '@mui/icons-material/Loyalty';
 
-// --- IMPORT ẢNH LOCAL ---
 import heroMain from "@/assets/images/hero.jpg";
 import heroFallback from "@/assets/images/hero-fallback.jpg";
-import imgLatte from "@/assets/products/latte.jpg";
-import imgCappuccino from "@/assets/products/cappuccino.jpg";
-import imgEspresso from "@/assets/products/espresso.jpg";
-import imgMatcha from "@/assets/products/matcha-latte.jpg";
-import imgNuocCam from "@/assets/products/nuoc-ep-cam.jpg";
-import imgCotDua from "@/assets/products/ca-phe-cot-dua.jpg";
-import imgTSChanChau from "@/assets/products/tra-sua-tran-chau.jpg";
-import imgTXBacHa from "@/assets/products/tra-xanh-bac-ha.jpg";
-import imgTDCS from "@/assets/products/tra-dao-cam-sa.jpg";
-import imgBacXiu from "@/assets/products/bac-xiu.jpg";
-import imgSinhTo from "@/assets/products/sinh-to-xoai.jpg";
-import imgCaPheSua from "@/assets/products/ca-phe-sua.jpg";
+
+// --- CẤU HÌNH ẢNH SẢN PHẨM ---
+// Sử dụng ảnh fallback làm ảnh mặc định nếu không tìm thấy ảnh sản phẩm
+const PLACEHOLDER_IMAGE = heroFallback;
+
+// BẢNG ÁNH XẠ CHÍNH XÁC TỪ TÊN DB SANG TÊN FILE ẢNH
+// Khóa (bên trái): Tên sản phẩm chính xác trong Database (có dấu)
+// Giá trị (bên phải): Tên file ảnh chính xác trong thư mục public/products/ (không dấu)
+const productImageMap: Record<string, string> = {
+  "Bạc xỉu": "bac-xiu.jpg",
+  "Cà phê cốt dừa": "ca-phe-cot-dua.jpg",
+  "Cà phê sữa": "ca-phe-sua.jpg",
+  "Cappuccino": "cappuccino.jpg",
+  "Espresso": "espresso.jpg",
+  "Latte": "latte.jpg",
+  "Matcha Latte": "matcha-latte.jpg",
+  "Nước ép cam": "nuoc-ep-cam.jpg",
+  "Sinh tố xoài": "sinh-to-xoai.jpg",
+  "Trà đào cam sả": "tra-dao-cam-sa.jpg",
+  "Trà sữa trân châu": "tra-sua-tran-chau.jpg",
+  "Trà xanh bạc hà": "tra-xanh-bac-ha.jpg",
+  // Lưu ý: "Trà đào cam sả" có 2 dòng trong DB , 
+  // nhưng chỉ cần 1 dòng map này là đủ để hiển thị ảnh cho cả hai.
+};
 
 type Product = { id: string; name: string; price: number; image_url?: string };
 const backend = import.meta.env.VITE_BACKEND_URL;
 
-const localImages: { match: RegExp; src: string }[] = [
-  { match: /latte/i, src: imgLatte },
-  { match: /cappuccino/i, src: imgCappuccino },
-  { match: /espresso/i, src: imgEspresso },
-  { match: /matcha/i, src: imgMatcha },
-  { match: /nước ép cam|nuoc ep cam/i, src: imgNuocCam },
-  { match: /cốt dừa|cot dua/i, src: imgCotDua },
-  { match: /trà sữa trân châu|tran chau/i, src: imgTSChanChau },
-  { match: /trà xanh bạc hà|bac ha/i, src: imgTXBacHa },
-  { match: /trà đào cam sả|dao cam sa/i, src: imgTDCS },
-  { match: /bạc xỉu|bac xiu/i, src: imgBacXiu },
-  { match: /sinh tố|sinh to/i, src: imgSinhTo },
-  { match: /cà phê sữa|ca phe sua/i, src: imgCaPheSua },
-];
-
+// Hàm chọn ảnh mới, sử dụng bảng ánh xạ trực tiếp
 function pickImage(p: Product) {
+  // 1. Ưu tiên ảnh từ backend nếu có (ví dụ: link ảnh online)
   if (p.image_url) return p.image_url;
-  const found = localImages.find((x) => x.match.test(p.name));
-  if (found) return found.src;
-  return `https://source.unsplash.com/400x300/?coffee,drink,${encodeURIComponent(p.name)}`;
+
+  // 2. Tìm tên file trong bảng ánh xạ dựa trên tên sản phẩm
+  // Sử dụng tên sản phẩm làm khóa để tra cứu
+  const localFileName = productImageMap[p.name];
+
+  if (localFileName) {
+    // Nếu tìm thấy, trả về đường dẫn đến ảnh trong thư mục public
+    return `/products/${localFileName}`;
+  }
+
+  // 3. Fallback: Nếu không có ảnh nào phù hợp, dùng ảnh placeholder nội bộ
+  // để đảm bảo khung hình không bị vỡ và các thẻ bằng nhau.
+  return PLACEHOLDER_IMAGE;
 }
+// --- KẾT THÚC CẤU HÌNH ẢNH ---
+
 
 function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
@@ -70,7 +80,7 @@ export default function CustomerHome() {
   const [searchTerm, setSearchTerm] = React.useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   
-  const { profile } = useAuth(); // THÊM MỚI: Lấy profile từ AuthContext
+  const { profile } = useAuth();
 
   React.useEffect(() => {
     setLoading(true);
@@ -107,7 +117,7 @@ export default function CustomerHome() {
 
       <Container sx={{ mb: 6 }}>
         
-        {/* === PHẦN THÊM MỚI: HIỂN THỊ ĐIỂM TÍCH LŨY === */}
+        {/* === PHẦN HIỂN THỊ ĐIỂM TÍCH LŨY === */}
         {profile && (
           <Paper sx={{ p: 3, mb: 4, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 3, background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)' }}>
             <LoyaltyIcon color="primary" sx={{ fontSize: 50 }} />
@@ -119,7 +129,7 @@ export default function CustomerHome() {
             </Box>
           </Paper>
         )}
-        {/* === KẾT THÚC PHẦN THÊM MỚI === */}
+        {/* === KẾT THÚC PHẦN HIỂN THỊ ĐIỂM === */}
 
         <Typography variant="h4" fontWeight={700} gutterBottom>☕ Menu Serenite</Typography>
         <Box sx={{ mb: 3, maxWidth: '500px' }}>
@@ -130,13 +140,14 @@ export default function CustomerHome() {
             />
         </Box>
         {err && <Typography color="error" sx={{ mb: 2 }}>Lỗi tải dữ liệu: {err}</Typography>}
-        <Grid container spacing={3}>
+        <Grid container spacing={3} alignItems="stretch">
           {loading ? <Typography sx={{ p: 3, width: '100%' }}>Đang tải menu...</Typography>
           : items.length === 0 ? <Typography sx={{ p: 3, width: '100%' }}>Không tìm thấy sản phẩm nào.</Typography>
           : (
             items.map((p) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={p.id}>
-                <ProductCard product={p} />
+              // TRUYỀN HÀM pickImage VÀO ProductCard ĐỂ SỬ DỤNG
+              <Grid item xs={12} sm={6} md={4} lg={3} key={p.id} sx={{ display: 'flex' }}>
+                <ProductCard product={p} pickImage={pickImage} />
               </Grid>
             ))
           )}
