@@ -11,10 +11,10 @@ import { CartProvider } from './lib/cart/CartContext';
 import { BrowserRouter } from 'react-router-dom';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  // ❌ KHÔNG KHUYẾN KHÍCH: Tắt StrictMode (mất tính bảo vệ)
+  // <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {/* BrowserRouter phải bọc ngoài cùng, ngay sau các Provider giao diện */}
       <BrowserRouter>
         <AuthProvider>
           <CartProvider>
@@ -23,5 +23,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

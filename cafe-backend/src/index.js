@@ -679,3 +679,24 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ cafe-backend chạy tại http://localhost:${PORT}`);
 });
+
+// ✅ THÊM: Lấy profile của user
+app.get("/profiles/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+    
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
