@@ -1,0 +1,14 @@
+/* src/pages/auth/LoginBackground.module.css */
+
+.loginBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('../../assets/images/login-bg.jpg'); /* Đảm bảo đường dẫn này đúng */
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.7); /* Làm tối ảnh nền một chút */
+  z-index: -1; /* Đặt ảnh nền phía sau các nội dung khác */
+}
