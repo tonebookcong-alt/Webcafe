@@ -1,16 +1,21 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+import mkcert from 'vite-plugin-mkcert'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    mkcert() 
+  ],
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
   server: {
-    // nếu cần hiện lỗi rõ ràng
-    hmr: { overlay: true }
+    host: true, 
+    port: 5173,
   }
-});
+
+})
